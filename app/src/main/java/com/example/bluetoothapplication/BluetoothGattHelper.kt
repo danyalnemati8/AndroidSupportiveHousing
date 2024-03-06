@@ -46,9 +46,11 @@ class BluetoothGattHelper(val deviceName: String,var CHARACTERISTICUUID :String,
             override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
                 Log.i("$deviceName GattConnection", "onMtuChanged invoked")
                 if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Log.i("BluetoothScan","MTU request Success")
                     Log.i("MTU Request", "MTU request success")
                     gatt.discoverServices()
                 } else {
+                    Log.i("BluetoothScan","MTU request failed")
                     Log.i("MTU Request", "MTU request failed")
                 }
             }
@@ -70,10 +72,7 @@ class BluetoothGattHelper(val deviceName: String,var CHARACTERISTICUUID :String,
                             gatt.readCharacteristic(discoveredCharacteristic)
                             if (gatt.setCharacteristicNotification(discoveredCharacteristic, true)) {
                                 Log.i("Set characteristic notification", "Success!")
-                                Log.i(
-                                    "Characteristic property flags",
-                                    discoveredCharacteristic.properties.toString()
-                                )
+                                Log.i("Characteristic property flags", discoveredCharacteristic.properties.toString())
                             } else {
                                 Log.i("Set characteristic notification", "Failure!")
                             }
@@ -95,6 +94,7 @@ class BluetoothGattHelper(val deviceName: String,var CHARACTERISTICUUID :String,
                     val value = String(data, StandardCharsets.UTF_8)
                     Log.i("Read data", "Received data: $value")
                 }
+
             }
 
             override fun onCharacteristicRead(gatt: BluetoothGatt, discoveredCharacteristic: BluetoothGattCharacteristic, value : ByteArray, status: Int) {

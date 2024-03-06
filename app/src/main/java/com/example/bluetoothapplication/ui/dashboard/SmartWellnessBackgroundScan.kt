@@ -79,7 +79,7 @@ class SmartWellnessBackgroundScan : Service() {
                     val bluetoothGattHelper = BluetoothGattHelper(device.name.toString(),"beb5483e-36e1-4688-b7f5-ea07361b26a8","4fafc201-1fb5-459e-8fcc-c5c9c331914b")
                     Log.i("BluetoothScan","Got the Object")
                     val gatt = device?.connectGatt(applicationContext,true,  bluetoothGattHelper.gattCallback)
-
+                   // bluetoothGattHelper.gattCallback.onCharacteristicRead()
                 }
             }
         }
