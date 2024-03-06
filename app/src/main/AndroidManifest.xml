@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:remove="android:maxSdkVersion" />
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -21,6 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BluetoothApplication"
         tools:targetApi="31">
+        <service android:name=".BackgroundScan" />
+        <service android:name=".ui.dashboard.SmartWellnessBackgroundScan"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
