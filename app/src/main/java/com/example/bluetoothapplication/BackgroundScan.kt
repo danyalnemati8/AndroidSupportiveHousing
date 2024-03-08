@@ -12,11 +12,13 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.kotlinconversionsupportivehousing.IBackgroundScan
 import com.example.kotlinconversionsupportivehousing.IRestartScan
@@ -69,13 +71,10 @@ class BackgroundScan : Service(), IRestartScan {
         handler.postDelayed({ scanner!!.startScan(scanCallback) }, 120000)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
-        NotificationHelper.createNotificationChannel(
-            applicationContext,
-            SERVICE_NOTIFICATION_ID,
-            SERVICE_NOTIFICATION_NAME
-        )
+        NotificationHelper.createNotificationChannel(applicationContext, SERVICE_NOTIFICATION_ID, SERVICE_NOTIFICATION_NAME)
         notification = NotificationCompat.Builder(this, SERVICE_NOTIFICATION_ID)
             .setContentTitle("Smart Medical Alert")
             .setContentText("Ongoing BLE Scan")
@@ -92,6 +91,7 @@ class BackgroundScan : Service(), IRestartScan {
         scanner!!.startScan(scanCallback)
     }
 
+    @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Toast.makeText(
             applicationContext,

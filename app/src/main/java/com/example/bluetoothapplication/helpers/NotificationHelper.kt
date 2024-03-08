@@ -11,9 +11,7 @@ object NotificationHelper {
     @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannel(context: Context, notificationID: String?, notificationName: String?) {
         val channel = NotificationChannel(notificationID, notificationName, NotificationManager.IMPORTANCE_HIGH)
-        val notificationManager = context.getSystemService(
-            NotificationManager::class.java
-        )
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(channel)
     }
 }
