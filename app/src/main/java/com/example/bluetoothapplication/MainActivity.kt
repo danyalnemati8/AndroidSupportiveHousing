@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
     var minute:Int = 0
     var schedule = mutableMapOf("Sunday" to "N/A", "Monday" to "N/A", "Tuesday" to "N/A", "Wednesday" to "N/A", "Thursday" to "N/A", "Friday" to "N/A", "Saturday" to "N/A")
 
-    // Bluetooth Gatt Variables
+    // Bluetooth Gatt Variablesison
     var deviceGatt: BluetoothGatt?= null
     var deviceService: BluetoothGattService?= null
     val pillDispenserGatt: GattConnection = GattConnection("Pill Dispenser")
@@ -247,26 +247,26 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
             //scanForBluetooth()
         }
 
-        pillDispinserService = findViewById<Button>(R.id.startSmartPill)
-        pillDispinserService.setOnClickListener(View.OnClickListener {
-            initiateBackgroundScan = true
-            scanForBluetoothWithPermissionsPillDispenser()
-        })
+//        pillDispinserService = findViewById<Button>(R.id.startSmartPill)
+//        pillDispinserService.setOnClickListener(View.OnClickListener {
+//            initiateBackgroundScan = true
+//            scanForBluetoothWithPermissionsPillDispenser()
+//        })
 
-        setSunday = findViewById<Button>(R.id.Sunday)
-        setSunday.setOnClickListener(View.OnClickListener { setTime("Sunday") })
-        setMonday = findViewById<Button>(R.id.Monday)
-        setMonday.setOnClickListener(View.OnClickListener { setTime("Monday") })
-        setTuesday = findViewById<Button>(R.id.Tuesday)
-        setTuesday.setOnClickListener(View.OnClickListener { setTime("Tuesday") })
-        setWednesday = findViewById<Button>(R.id.Wednesday)
-        setWednesday.setOnClickListener(View.OnClickListener { setTime("Wednesday") })
-        setThursday = findViewById<Button>(R.id.Thursday)
-        setThursday.setOnClickListener(View.OnClickListener { setTime("Thursday") })
-        setFriday = findViewById<Button>(R.id.Friday)
-        setFriday.setOnClickListener(View.OnClickListener { setTime("Friday") })
-        setSaturday = findViewById<Button>(R.id.Saturday)
-        setSaturday.setOnClickListener(View.OnClickListener { setTime("Saturday") })
+//        setSunday = findViewById<Button>(R.id.Sunday)
+//        setSunday.setOnClickListener(View.OnClickListener { setTime("Sunday") })
+//        setMonday = findViewById<Button>(R.id.Monday)
+//        setMonday.setOnClickListener(View.OnClickListener { setTime("Monday") })
+//        setTuesday = findViewById<Button>(R.id.Tuesday)
+//        setTuesday.setOnClickListener(View.OnClickListener { setTime("Tuesday") })
+//        setWednesday = findViewById<Button>(R.id.Wednesday)
+//        setWednesday.setOnClickListener(View.OnClickListener { setTime("Wednesday") })
+//        setThursday = findViewById<Button>(R.id.Thursday)
+//        setThursday.setOnClickListener(View.OnClickListener { setTime("Thursday") })
+//        setFriday = findViewById<Button>(R.id.Friday)
+//        setFriday.setOnClickListener(View.OnClickListener { setTime("Friday") })
+//        setSaturday = findViewById<Button>(R.id.Saturday)
+//        setSaturday.setOnClickListener(View.OnClickListener { setTime("Saturday") })
 
 
 

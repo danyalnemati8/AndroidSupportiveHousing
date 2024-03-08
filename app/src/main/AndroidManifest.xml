@@ -22,6 +22,7 @@
         android:theme="@style/Theme.BluetoothApplication"
         tools:targetApi="31">
         <service android:name=".BackgroundScan" />
+        <service android:name=".ui.home.BackgroundScan"/>
         <service android:name=".ui.dashboard.SmartWellnessBackgroundScan"/>
         <activity
             android:name=".MainActivity"
