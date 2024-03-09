@@ -51,9 +51,7 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
     private lateinit var notGrantedPermissions : List<String>
     //private val bluetoothGattHelper = BluetoothGattHelper()
     private lateinit var enableBluetoothLauncher: ActivityResultLauncher<Intent>
-    private var crashApp by Delegates.notNull<Boolean>()
 
-    private val permissionrequestcode = 123
 
     //    ESP-01 UUIDs
 //    val CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8a07361b26a8"
@@ -110,7 +108,8 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
         Manifest.permission.BLUETOOTH_SCAN,
         Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION)
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.POST_NOTIFICATIONS)
 
     private val mConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -272,6 +271,16 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
 
     }
     // Checking if permissions already exist or writing those permissions
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 123){
+            BluetoothPermissionResult.launch(notGrantedPermissions.toTypedArray())
+        }else{
+            Toast.makeText(this, "Bluetooth and location not permission granted", Toast.LENGTH_SHORT).show()
+            //scanForBluetoothWithPermissions()
+        }
+    }
     private fun scanForBluetoothWithPermissions() {
         Log.i("BluetoothScan", "Checking for permissions")
         notGrantedPermissions = permissionList.filterNot { permission ->
@@ -280,15 +289,13 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
         Log.i("BluetoothScan", notGrantedPermissions.toString())
         if (notGrantedPermissions.isNotEmpty()) {
             ActivityCompat.requestPermissions(this, notGrantedPermissions.toTypedArray(), 123)
-            BluetoothPermissionResult.launch(notGrantedPermissions.toTypedArray())
             // displayRequestPermissionToastMessage()
         } else {
-            Toast.makeText(this, "Bluetooth and location permission granted", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(this, "Bluetooth and location permission granted", Toast.LENGTH_SHORT).show()
             enableBluetoothandLocation()
         }
     }
-        @SuppressLint("MissingPermission")
+       /* @SuppressLint("MissingPermission")
         fun scanForBluetoothWithPermissionsPillDispenser(){
             Log.i("Service", "scanForBluetoothWithPermissionsService invoked")
             if (isPermissionsGranted() != PackageManager.PERMISSION_GRANTED) {
@@ -359,7 +366,7 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
             }
             return counter
         }
-
+*/
         // Code to write the toast message.
         /*private fun displayRequestPermissionToastMessage(){
             AlertDialog.Builder(this).setTitle("Requesting Bluetooth and Location Permissions")
@@ -374,9 +381,10 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
                 }
                 .show()
         }*/
-        private val BluetoothPermissionResult=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permissionMap->
+        private val BluetoothPermissionResult=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
+            permissionMap->
             if (permissionMap.all { it.value }){
-                Toast.makeText(this, "Media permissions granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Bluetooth and Loca permissions granted", Toast.LENGTH_SHORT).show()
                 enableBluetoothandLocation()
             }else{
                 Toast.makeText(this, "Media permissions not granted!", Toast.LENGTH_SHORT).show()
@@ -398,7 +406,6 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
                         (this.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
                    */ if(bluetoothAdapter != null) {
                 Log.i("BluetoothScan","Got Bluetooth Adapter")
-                crashApp = true
                 val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 startActivityForResult(enableBtIntent, 123)
 
