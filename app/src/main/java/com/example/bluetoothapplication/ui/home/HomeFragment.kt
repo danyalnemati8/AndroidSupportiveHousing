@@ -56,14 +56,14 @@ class HomeFragment : Fragment(), IBackgroundScan {
 //    val DESCRIPTOR_UUID = "4d6ec567-93f0-4541-8152-81b35dc5cb8b"
 
     //    BLANK
-    val CHARACTERISTIC_UUID = "681F827F-D00E-4307-B77A-F38014D6CC5F"
-    val SERVICE_UUID = "3BED005E-75B7-4DE6-B877-EAE81B0FC93F"
-    val DESCRIPTOR_UUID = "013B54B2-5520-406A-87F5-D644AD3E0565"
+//    val CHARACTERISTIC_UUID = "681F827F-D00E-4307-B77A-F38014D6CC5F"
+//    val SERVICE_UUID = "3BED005E-75B7-4DE6-B877-EAE81B0FC93F"
+//    val DESCRIPTOR_UUID = "013B54B2-5520-406A-87F5-D644AD3E0565"
 
 //    Pill Dispenser
-//    val CHARACTERISTIC_UUID = "B3E39CF1-B4D5-4F0A-88DE-6EDE9ABE2BD2"
-//    val SERVICE_UUID = "B3E39CF0-B4D5-4F0A-88DE-6EDE9ABE2BD2"
-//    val DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb"
+    val CHARACTERISTIC_UUID = "B3E39CF1-B4D5-4F0A-88DE-6EDE9ABE2BD2"
+    val SERVICE_UUID = "B3E39CF0-B4D5-4F0A-88DE-6EDE9ABE2BD2"
+    val DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb"
 
     // Pill Dispenser Buttons
     lateinit var pillDispinserService: Button
@@ -79,7 +79,7 @@ class HomeFragment : Fragment(), IBackgroundScan {
     lateinit var setSaturday: Button
     var hour = 0;
     var minute:Int = 0
-    var schedule = mutableMapOf("Sunday" to "N/A", "Monday" to "N/A", "Tuesday" to "N/A", "Wednesday" to "N/A", "Thursday" to "N/A", "Friday" to "N/A", "Saturday" to "N/A")
+    var schedule = mutableMapOf("Sun" to "N/A", "Mon" to "N/A", "Tue" to "N/A", "Wed" to "N/A", "Thu" to "N/A", "Fri" to "N/A", "Sat" to "N/A")
 
     // Bluetooth Gatt Variables
     var deviceGatt: BluetoothGatt?= null
@@ -144,15 +144,36 @@ class HomeFragment : Fragment(), IBackgroundScan {
             TimePickerDialog.OnTimeSetListener { timePicker, selectedHour, selectedMinute ->
                 hour = selectedHour
                 minute = selectedMinute
-                schedule[day] = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
-                Log.i("Schedule", schedule.toString())
-                sendToDevice(schedule.toString())
+                val dayAbbreviated = day.substring(0,3)
+                if(hour>12){
+                    hour %= 12
+                    schedule[dayAbbreviated] = String.format(Locale.getDefault(), "%02d:%02d PM", hour, minute)
+                } else{
+                    schedule[dayAbbreviated] = String.format(Locale.getDefault(), "%02d:%02d AM", hour, minute)
+                }
+//                Log.i("Schedule", schedule.toString())
+                Log.i("Schedule", convertData())
+//                sendToDevice(schedule.toString())
+                sendToDevice(convertData())
             }
         val style = android.R.style.Theme_Holo_Light_Dialog_NoActionBar
         val timePickerDialog =
             TimePickerDialog(requireContext(), style, onTimeSetListener, hour, minute, true)
         timePickerDialog.setTitle("Select Time")
         timePickerDialog.show()
+    }
+
+    fun convertData(): String {
+
+        var newScheduleFormat = ""
+
+        for ((key, value) in schedule) {
+            newScheduleFormat += key + " " + value + " "
+        }
+
+        return newScheduleFormat.trimEnd()
+
+
     }
 
     private fun launchBackgroundScan() {
@@ -234,19 +255,19 @@ class HomeFragment : Fragment(), IBackgroundScan {
         })
 
         setSunday = binding.Sunday
-        setSunday.setOnClickListener(View.OnClickListener { setTime("Sunday") })
+        setSunday.setOnClickListener(View.OnClickListener { setTime("Sun") })
         setMonday = binding.Monday
-        setMonday.setOnClickListener(View.OnClickListener { setTime("Monday") })
+        setMonday.setOnClickListener(View.OnClickListener { setTime("Mon") })
         setTuesday = binding.Tuesday
-        setTuesday.setOnClickListener(View.OnClickListener { setTime("Tuesday") })
+        setTuesday.setOnClickListener(View.OnClickListener { setTime("Tue") })
         setWednesday = binding.Wednesday
-        setWednesday.setOnClickListener(View.OnClickListener { setTime("Wednesday") })
+        setWednesday.setOnClickListener(View.OnClickListener { setTime("Wed") })
         setThursday = binding.Thursday
-        setThursday.setOnClickListener(View.OnClickListener { setTime("Thursday") })
+        setThursday.setOnClickListener(View.OnClickListener { setTime("Thu") })
         setFriday = binding.Friday
-        setFriday.setOnClickListener(View.OnClickListener { setTime("Friday") })
+        setFriday.setOnClickListener(View.OnClickListener { setTime("Fri") })
         setSaturday = binding.Saturday
-        setSaturday.setOnClickListener(View.OnClickListener { setTime("Saturday") })
+        setSaturday.setOnClickListener(View.OnClickListener { setTime("Sat") })
 
         return root
     }
