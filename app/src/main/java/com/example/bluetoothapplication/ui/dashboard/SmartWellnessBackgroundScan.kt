@@ -1,6 +1,7 @@
 package com.example.bluetoothapplication.ui.dashboard
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,18 +11,16 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import com.example.bluetoothapplication.BluetoothGattHelper
+import androidx.fragment.app.Fragment
 import com.example.bluetoothapplication.R
 
 
@@ -37,6 +36,9 @@ class SmartWellnessBackgroundScan : Service() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothScanner : BluetoothLeScanner
     private lateinit var notification : Notification
+    var callback : IBackgroundScan? = null
+    private val mBinder: IBinder = MyBinder()
+
 
     override fun onCreate() {
         super.onCreate()
@@ -46,17 +48,12 @@ class SmartWellnessBackgroundScan : Service() {
       }
 
 
+    @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Toast.makeText(applicationContext,"Launching Smart Alert Background Scan",Toast.LENGTH_SHORT).show()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            if(notification != null){
-                startForeground(1,notification)
-                beginScan()
-            }
-        else{
-                Log.i("BluetoothScan","Something is fishy in SmartWellnessBackgroundScan")
-                Toast.makeText(applicationContext,"Stopping Smart Alert Background Scan",Toast.LENGTH_SHORT).show()
-            }
+            startForeground(1,notification)
+            beginScan()
         }
         return START_STICKY
     }
@@ -76,11 +73,8 @@ class SmartWellnessBackgroundScan : Service() {
                 if (device != null && device.name != null && device.name == "ESP32") {
                     Log.i("BluetoothScan",device.name.toString())
                     stopScan()
-                    val bluetoothGattHelper = BluetoothGattHelper(device.name.toString(),"beb5483e-36e1-4688-b7f5-ea07361b26a8","4fafc201-1fb5-459e-8fcc-c5c9c331914b")
-                    Log.i("BluetoothScan","Got the Object")
-                    val gatt = device?.connectGatt(applicationContext,true,  bluetoothGattHelper.gattCallback)
-                   // bluetoothGattHelper.gattCallback.onCharacteristicRead()
-                }
+                    callback?.onTargetDeviceFound(device)
+                 }
             }
         }
         override fun onScanFailed(errorCode: Int) {
@@ -89,6 +83,7 @@ class SmartWellnessBackgroundScan : Service() {
         }
     }
     fun stopScan(){
+        Log.i("SmartWellnessBackgroundScan","Stop Scan Method")
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
             bluetoothScanner.stopScan(scanCallBack)
         }
@@ -96,7 +91,7 @@ class SmartWellnessBackgroundScan : Service() {
 
     private fun showNotification() {
         createNotificationChannel()
-        var builder = NotificationCompat.Builder(this, SERVICE_NOTIFICATION_ID)
+        val builder = NotificationCompat.Builder(this, SERVICE_NOTIFICATION_ID)
             .setSmallIcon(R.drawable.baseline_bluetooth_searching_24)
             .setContentTitle("Smart Medical Alert")
             .setContentText("Background Scan for Smart Medical Alert goes on in background")
@@ -106,12 +101,10 @@ class SmartWellnessBackgroundScan : Service() {
             .build()
         notification = builder
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        if (notificationManager != null) {
-            notificationManager.notify(1, notification)
-        }
+        notificationManager.notify(1, notification)
     }
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Smart Wellness"
             val descriptionText = "Smart wellness notification"
             val importance = NotificationManager.IMPORTANCE_HIGH
@@ -125,12 +118,37 @@ class SmartWellnessBackgroundScan : Service() {
         }
 
     override fun onBind(intent: Intent): IBinder {
-            TODO("Return the communication channel to the service.")
-        }
+        return mBinder
+    }
 
+    override fun onUnbind(intent: Intent?): Boolean {
+        super.onUnbind(intent)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        Log.i("UNBIND SERVICE", "Success")
+        return true
+    }
     override fun onDestroy() {
-        super.onDestroy();
+        super.onDestroy()
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED)
             bluetoothScanner.stopScan(scanCallBack)
+    }
+
+     inner class MyBinder : Binder() {
+        fun getService(): SmartWellnessBackgroundScan {
+            return this@SmartWellnessBackgroundScan
+        }
+    }
+
+
+    fun registerClient(fragment: Fragment) {
+        if (fragment is DashboardFragment) {
+            callback = fragment
+        }
+    }
+
+    fun stopServiceScan() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
+            bluetoothScanner.stopScan(scanCallBack)
+        }
     }
 }

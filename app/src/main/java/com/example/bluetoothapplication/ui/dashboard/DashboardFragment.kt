@@ -1,14 +1,19 @@
 package com.example.bluetoothapplication.ui.dashboard
 
 import android.Manifest
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -20,10 +25,12 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.bluetoothapplication.databinding.FragmentDashboardBinding
+import org.json.JSONException
+import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
-class DashboardFragment : Fragment() {
+class DashboardFragment : Fragment(),IBackgroundScan {
 
     private var _binding: FragmentDashboardBinding? = null
     // This property is only valid between onCreateView and
@@ -31,6 +38,10 @@ class DashboardFragment : Fragment() {
     private val binding get() = _binding!!
     var CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8"
     var SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+    private var gatt:BluetoothGatt? = null
+    private var startBackgroundScan: Intent? = null
+    private lateinit var notification: TextView
+
     val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
 
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
@@ -117,8 +128,18 @@ class DashboardFragment : Fragment() {
                 val data = discoveredCharacteristic.value
                 val value = String(data, StandardCharsets.UTF_8)
                 Log.i("Read data", "Received data: $value")
-            }
 
+                try {
+                    Log.i("Smart data","this is smart data")
+                    val json = JSONObject(characteristicValue)
+                    val lastDetected = json.getInt("lastDetected")
+                    activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected", Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: JSONException) {
+                    e.printStackTrace()
+                }
+            }
         }
 
         override fun onCharacteristicRead(gatt: BluetoothGatt, discoveredCharacteristic: BluetoothGattCharacteristic, value : ByteArray, status: Int) {
@@ -130,6 +151,18 @@ class DashboardFragment : Fragment() {
                 val data = discoveredCharacteristic.value
                 val value = String(data, StandardCharsets.UTF_8)
                 Log.i("Read data", "Received data: $value")
+            }
+            try {
+                Log.i("Smart data","this is smart data")
+                val json = JSONObject(value)
+                val lastDetected = json.getInt("lastDetected")
+                Log.i("last detected",lastDetected.toString())
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected", Toast.LENGTH_LONG).show()
+                    notification.text = "Alert: No motion detected for $lastDetected"
+                }
+            } catch (e: JSONException) {
+                e.printStackTrace()
             }
         }
 
@@ -154,6 +187,7 @@ class DashboardFragment : Fragment() {
             }
         }
     }
+    private var serviceInstance: SmartWellnessBackgroundScan? = null
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -163,7 +197,7 @@ class DashboardFragment : Fragment() {
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val notification: TextView = binding.notificationText
+        notification = binding.notificationText
         val startscan: Button = binding.startscan
         val stopscan: Button = binding.stopscan
 
@@ -175,6 +209,17 @@ class DashboardFragment : Fragment() {
                 requireContext().startForegroundService(startBackgroundScan)
             }else{
                 requireContext().startService(startBackgroundScan)
+            }
+            val intent = Intent(requireContext(), SmartWellnessBackgroundScan::class.java)
+            requireContext().bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
+        }
+
+        stopscan.setOnClickListener {
+            if (startBackgroundScan != null) {
+                Toast.makeText(requireContext(), "Stopping continuous scan", Toast.LENGTH_LONG).show()
+                serviceInstance?.stopServiceScan()
+                requireContext().unbindService(mConnection)
+                startBackgroundScan = null
             }
         }
 
@@ -191,5 +236,37 @@ class DashboardFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
     }
+
+    override fun onTargetDeviceFound(device: BluetoothDevice) {
+        Log.i("BluetoothScan","Reached onTargetDeviceFound")
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.i("BluetoothScan","Reached onTargetDeviceFound")
+            gatt = device.connectGatt(requireContext(),true,gattCallback,BluetoothDevice.TRANSPORT_LE)
+        }
+    }
+
+    private val mConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as? SmartWellnessBackgroundScan.MyBinder
+            if (binder != null) {
+                serviceInstance = binder.getService()
+                serviceInstance?.registerClient(this@DashboardFragment)
+                Log.i("SERVICE BIND SMART WELLNESS", "Success")
+            } else {
+                Log.e("SERVICE BIND SMART WELLNESS", "Failed to bind to service: Binder is null")
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            Log.i("SERVICE BIND SMART WELLNESS", "Disconnected")
+            // Clear the reference to the service instance
+            serviceInstance = null
+        }
+    }
+
+
+
 }
