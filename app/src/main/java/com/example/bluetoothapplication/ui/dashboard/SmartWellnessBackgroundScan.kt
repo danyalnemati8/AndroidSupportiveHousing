@@ -15,8 +15,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -38,6 +41,9 @@ class SmartWellnessBackgroundScan : Service() {
     private lateinit var notification : Notification
     var callback : IBackgroundScan? = null
     private val mBinder: IBinder = MyBinder()
+    private var scanning = false
+    private val handler = Handler(Looper.myLooper()!!)
+    private val SCAN_PERIOD: Long = 20000
 
 
     override fun onCreate() {
@@ -62,7 +68,20 @@ class SmartWellnessBackgroundScan : Service() {
         bluetoothScanner = bluetoothAdapter.bluetoothLeScanner
         Toast.makeText(applicationContext,"Beginning ESP32 Scan",Toast.LENGTH_SHORT).show()
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED){
-            bluetoothScanner.startScan(scanCallBack)
+            if (!scanning) { // Stops scanning after a pre-defined scan period.
+                handler.postDelayed({
+                    scanning = false;
+                    Log.i("Bluetooth Scan","Stopping the Scan")
+                    bluetoothScanner.stopScan(scanCallBack) }, SCAN_PERIOD)
+                scanning = true
+                Log.i("Bluetooth Scan","Starting the Scan")
+                bluetoothScanner.startScan(scanCallBack)
+            } else {
+                scanning = false
+                Log.i("Bluetooth Scan","Stopping the Scan")
+                bluetoothScanner.stopScan(scanCallBack)
+            }
+            //bluetoothScanner.startScan(scanCallBack)
           }
     }
 
@@ -123,14 +142,17 @@ class SmartWellnessBackgroundScan : Service() {
 
     override fun onUnbind(intent: Intent?): Boolean {
         super.onUnbind(intent)
-        stopForeground(STOP_FOREGROUND_REMOVE)
         Log.i("UNBIND SERVICE", "Success")
         return true
     }
     override fun onDestroy() {
         super.onDestroy()
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
             bluetoothScanner.stopScan(scanCallBack)
+        }
+        stopForeground(Service.STOP_FOREGROUND_REMOVE) // Stop the foreground service
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(1) // Cancel the notification
     }
 
      inner class MyBinder : Binder() {
@@ -149,6 +171,9 @@ class SmartWellnessBackgroundScan : Service() {
     fun stopServiceScan() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
             bluetoothScanner.stopScan(scanCallBack)
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(1)
         }
     }
 }

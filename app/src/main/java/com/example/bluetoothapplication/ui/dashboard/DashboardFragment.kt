@@ -1,6 +1,7 @@
 package com.example.bluetoothapplication.ui.dashboard
 
 import android.Manifest
+import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -15,6 +16,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,13 +24,20 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.bluetoothapplication.R
 import com.example.bluetoothapplication.databinding.FragmentDashboardBinding
 import org.json.JSONException
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
+
 
 class DashboardFragment : Fragment(),IBackgroundScan {
 
@@ -41,17 +50,22 @@ class DashboardFragment : Fragment(),IBackgroundScan {
     private var gatt:BluetoothGatt? = null
     private var startBackgroundScan: Intent? = null
     private lateinit var notification: TextView
+    var ALERT_NOTIFICATION_ID = "ALERT_NOTIFICATION"
+
 
     val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
 
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-            Log.i("BluetoothScan", "onConnectionStateChange invoked")
-            Log.i("BluetoothScan Device Status", newState.toString() + "")
+            Log.i("BluetoothScan onConnectionStateChange", "onConnectionStateChange invoked")
+            Log.i("BluetoothScan onConnectionStateChange Device Status", newState.toString() + "")
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.i("BluetoothScan", "Connected to device. Proceeding with service discovery");
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Successfully connected to device", Toast.LENGTH_LONG).show()
+                    val toast = Toast.makeText(requireContext(), "Successfully connected to device", Toast.LENGTH_LONG)
+                    toast.setGravity(Gravity.CENTER, 0, 0)
+                    toast.show()
+
                 }
                 if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
                     gatt.requestMtu(512)
@@ -117,31 +131,6 @@ class DashboardFragment : Fragment(),IBackgroundScan {
             }
         }
 
-        override fun onCharacteristicRead(gatt: BluetoothGatt, discoveredCharacteristic: BluetoothGattCharacteristic, status: Int) {
-            Log.i("GattConnection", "onCharacteristicRead invoked")
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                    gatt.readCharacteristic(discoveredCharacteristic)
-                }
-
-                val characteristicValue = String(discoveredCharacteristic.value, StandardCharsets.UTF_8)
-                val data = discoveredCharacteristic.value
-                val value = String(data, StandardCharsets.UTF_8)
-                Log.i("Read data", "Received data: $value")
-
-                try {
-                    Log.i("Smart data","this is smart data")
-                    val json = JSONObject(characteristicValue)
-                    val lastDetected = json.getInt("lastDetected")
-                    activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected", Toast.LENGTH_LONG).show()
-                    }
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
-            }
-        }
-
         override fun onCharacteristicRead(gatt: BluetoothGatt, discoveredCharacteristic: BluetoothGattCharacteristic, value : ByteArray, status: Int) {
             Log.i("GattConnection", "onCharacteristicRead with byte array invoked")
             val value = String(value)
@@ -156,11 +145,21 @@ class DashboardFragment : Fragment(),IBackgroundScan {
                 Log.i("Smart data","this is smart data")
                 val json = JSONObject(value)
                 val lastDetected = json.getInt("lastDetected")
+                val currentDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                val notificationText = "Alert: No motion detected for $lastDetected on $currentDateTime"
                 Log.i("last detected",lastDetected.toString())
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected", Toast.LENGTH_LONG).show()
-                    notification.text = "Alert: No motion detected for $lastDetected"
+                    Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected minutes" , Toast.LENGTH_LONG).show()
+                    notification.text =notificationText
                 }
+                if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    Log.i("BluetoothScan","Disconnecting Gatt")
+                    gatt.disconnect()
+                    gatt.close()
+                    stopBackgroundScan()
+                }
+
             } catch (e: JSONException) {
                 e.printStackTrace()
             }
@@ -203,8 +202,8 @@ class DashboardFragment : Fragment(),IBackgroundScan {
 
         startscan.setOnClickListener {
             Log.i("BluetoothScan", "Launch Background Scan in Wellness Clicked")
-            val startBackgroundScan = Intent(requireContext(), SmartWellnessBackgroundScan::class.java)
-            startBackgroundScan.putExtra("service_uuid", SERVICE_UUID)
+            startBackgroundScan = Intent(requireContext(), SmartWellnessBackgroundScan::class.java)
+            startBackgroundScan!!.putExtra("service_uuid", SERVICE_UUID)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 requireContext().startForegroundService(startBackgroundScan)
             }else{
@@ -215,12 +214,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         }
 
         stopscan.setOnClickListener {
-            if (startBackgroundScan != null) {
-                Toast.makeText(requireContext(), "Stopping continuous scan", Toast.LENGTH_LONG).show()
-                serviceInstance?.stopServiceScan()
-                requireContext().unbindService(mConnection)
-                startBackgroundScan = null
-            }
+            stopBackgroundScan()
         }
 
         dashboardViewModel.text.observe(viewLifecycleOwner) {
@@ -230,8 +224,6 @@ class DashboardFragment : Fragment(),IBackgroundScan {
 
         return root
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -267,6 +259,22 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         }
     }
 
+    private fun stopBackgroundScan() {
+        // Foreground service was never started to begin with
+        if (startBackgroundScan == null) {
+            return
+        }
+        activity?.runOnUiThread {
+            Toast.makeText(requireContext(), "Successfully connected to device", Toast.LENGTH_LONG).show()
+        }
+        serviceInstance?.stopServiceScan()
 
+        // Stop the service if it was started
+        if (serviceInstance != null) {
+            requireActivity().stopService(Intent(requireContext(), SmartWellnessBackgroundScan::class.java))
+            requireContext().unbindService(mConnection)
+        }
+        startBackgroundScan = null
+    }
 
 }
