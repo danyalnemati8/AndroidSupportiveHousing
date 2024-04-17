@@ -44,6 +44,8 @@ class SmartWellnessBackgroundScan : Service() {
     private var scanning = false
     private val handler = Handler(Looper.myLooper()!!)
     private val SCAN_PERIOD: Long = 20000
+    private val handler1 = Handler(Looper.getMainLooper())
+    private val SCAN_INTERVAL: Long = 1 * 60 * 1000 // 5 minutes
 
 
     override fun onCreate() {
@@ -59,9 +61,19 @@ class SmartWellnessBackgroundScan : Service() {
         Toast.makeText(applicationContext,"Launching Smart Alert Background Scan",Toast.LENGTH_SHORT).show()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             startForeground(1,notification)
-            beginScan()
+           // beginScan()
+            schedulePeriodicScan()
         }
         return START_STICKY
+    }
+
+    private fun schedulePeriodicScan() {
+        // Begin scan immediately
+        beginScan()
+        // Schedule the next scan after SCAN_INTERVAL
+        handler.postDelayed({
+            schedulePeriodicScan()
+        }, SCAN_INTERVAL)
     }
 
     private fun beginScan() {
@@ -72,16 +84,17 @@ class SmartWellnessBackgroundScan : Service() {
                 handler.postDelayed({
                     scanning = false;
                     Log.i("Bluetooth Scan","Stopping the Scan")
+                    Toast.makeText(applicationContext,"Stopping the Scan",Toast.LENGTH_SHORT).show()
                     bluetoothScanner.stopScan(scanCallBack) }, SCAN_PERIOD)
                 scanning = true
                 Log.i("Bluetooth Scan","Starting the Scan")
                 bluetoothScanner.startScan(scanCallBack)
             } else {
                 scanning = false
-                Log.i("Bluetooth Scan","Stopping the Scan")
+                Log.i("Bluetooth Scan", "Stopping the Scan")
+                Toast.makeText(applicationContext,"Stopping the Scan",Toast.LENGTH_SHORT).show()
                 bluetoothScanner.stopScan(scanCallBack)
             }
-            //bluetoothScanner.startScan(scanCallBack)
           }
     }
 

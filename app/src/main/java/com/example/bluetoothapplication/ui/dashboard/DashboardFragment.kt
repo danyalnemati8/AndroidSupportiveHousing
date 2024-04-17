@@ -1,7 +1,10 @@
 package com.example.bluetoothapplication.ui.dashboard
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.Service
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -51,6 +54,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
     private var startBackgroundScan: Intent? = null
     private lateinit var notification: TextView
     var ALERT_NOTIFICATION_ID = "ALERT_NOTIFICATION"
+//    var notificationManager = NotificationManagerCompat.from(requireContext())
 
 
     val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
@@ -157,7 +161,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
                     Log.i("BluetoothScan","Disconnecting Gatt")
                     gatt.disconnect()
                     gatt.close()
-                    stopBackgroundScan()
+                    //stopBackgroundScan()
                 }
 
             } catch (e: JSONException) {
@@ -192,6 +196,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val dashboardViewModel =
             ViewModelProvider(this).get(DashboardViewModel::class.java)
+
 
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -277,4 +282,24 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         startBackgroundScan = null
     }
 
+   /* private fun updateNotification(notificationText: String) {
+        // Create a notification channel (required for Android Oreo and above)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(ALERT_NOTIFICATION_ID, "Alert Notification", NotificationManager.IMPORTANCE_HIGH)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // Create the notification
+        val notification = NotificationCompat.Builder(requireContext(), ALERT_NOTIFICATION_ID)
+            .setContentTitle("Alert")
+            .setContentText(notificationText)
+            .setSmallIcon(R.drawable.baseline_bluetooth_searching_24) // Set your notification icon here
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+
+        // Show the notification if permission is granted
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(1, notification)
+        }
+    }*/
 }
