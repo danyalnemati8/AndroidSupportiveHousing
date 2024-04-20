@@ -1,10 +1,6 @@
 package com.example.bluetoothapplication.ui.dashboard
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -27,11 +23,8 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.bluetoothapplication.R
 import com.example.bluetoothapplication.databinding.FragmentDashboardBinding
 import org.json.JSONException
 import org.json.JSONObject
@@ -40,6 +33,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.metrics.AwsSdkMetrics.setRegion
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.PutObjectRequest
+import java.io.ByteArrayInputStream
+import com.amazonaws.services.s3.model.*
+
 
 
 class DashboardFragment : Fragment(),IBackgroundScan {
@@ -54,7 +56,6 @@ class DashboardFragment : Fragment(),IBackgroundScan {
     private var startBackgroundScan: Intent? = null
     private lateinit var notification: TextView
     var ALERT_NOTIFICATION_ID = "ALERT_NOTIFICATION"
-//    var notificationManager = NotificationManagerCompat.from(requireContext())
 
 
     val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
@@ -156,6 +157,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
                     Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected minutes" , Toast.LENGTH_LONG).show()
                     notification.text =notificationText
                 }
+                addToAWSS31(notificationText)
                 if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
                 ) {
                     Log.i("BluetoothScan","Disconnecting Gatt")
@@ -190,6 +192,86 @@ class DashboardFragment : Fragment(),IBackgroundScan {
             }
         }
     }
+
+    private fun addToAWSS3(notificationText: String) {
+        val credentials = BasicAWSCredentials("", "")
+        val s3Client = AmazonS3Client(credentials)
+        s3Client.setRegion(com.amazonaws.regions.Region.getRegion(Regions.US_EAST_1))
+        val bucketName = ""
+        val objectKey = "notification.txt"
+        val notificationText = notificationText
+        val notificationTextBytes = notificationText.toByteArray()
+        val metadata = ObjectMetadata()
+        metadata.contentType = "text/plain"
+
+
+        val inputStream = ByteArrayInputStream(notificationTextBytes)
+        val putObjectRequest = PutObjectRequest(bucketName, objectKey, inputStream, metadata)
+        s3Client.putObject(putObjectRequest)
+    }
+
+
+    private fun addToAWSS31(notificationText: String) {
+        val credentials = BasicAWSCredentials("", "")
+        val s3Client = AmazonS3Client(credentials)
+        s3Client.setRegion(com.amazonaws.regions.Region.getRegion(Regions.US_EAST_1))
+
+        val bucketName = ""
+        val objectKey = "notification.txt"
+
+        try {
+            // Check if the object exists in the bucket
+            val objectMetadata = s3Client.getObjectMetadata(bucketName, objectKey)
+
+            // If the object exists, download its content
+            val existingObjectContent = if (objectMetadata.contentLength > 0) {
+                val s3Object = s3Client.getObject(bucketName, objectKey)
+                s3Object.objectContent.bufferedReader().use { it.readText() }
+            } else {
+                ""
+            }
+
+            // Append new notification text to the existing content
+            val notificationText = notificationText
+            val updatedContent = existingObjectContent + notificationText
+
+            // Convert the updated content to bytes
+            val updatedContentBytes = updatedContent.toByteArray()
+
+            // Create metadata for the updated object
+            val metadata = ObjectMetadata().apply {
+                contentType = "text/plain"
+                contentLength = updatedContentBytes.size.toLong()
+            }
+
+            // Upload the updated content back to S3
+            val inputStream = ByteArrayInputStream(updatedContentBytes)
+            val putObjectRequest = PutObjectRequest(bucketName, objectKey, inputStream, metadata)
+            s3Client.putObject(putObjectRequest)
+        } catch (e: AmazonS3Exception) {
+            if (e.statusCode == 404) {
+                // Object does not exist, create it with initial content
+                val initialContent = "Initial notification text"
+                val initialContentBytes = initialContent.toByteArray()
+                val initialMetadata = ObjectMetadata().apply {
+                    contentType = "text/plain"
+                    contentLength = initialContentBytes.size.toLong()
+                }
+                val initialInputStream = ByteArrayInputStream(initialContentBytes)
+                val initialPutObjectRequest = PutObjectRequest(bucketName, objectKey, initialInputStream, initialMetadata)
+                s3Client.putObject(initialPutObjectRequest)
+            } else {
+                // Handle other S3-specific exceptions
+                e.printStackTrace()
+            }
+        } catch (e: Exception) {
+            // Handle other exceptions (e.g., connectivity issues)
+            e.printStackTrace()
+        }
+    }
+
+    // Initialize Amazon S3 client with region
+
     private var serviceInstance: SmartWellnessBackgroundScan? = null
 
 
@@ -270,7 +352,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
             return
         }
         activity?.runOnUiThread {
-            Toast.makeText(requireContext(), "Successfully connected to device", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Successfully Dis connected to device", Toast.LENGTH_LONG).show()
         }
         serviceInstance?.stopServiceScan()
 
@@ -281,25 +363,4 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         }
         startBackgroundScan = null
     }
-
-   /* private fun updateNotification(notificationText: String) {
-        // Create a notification channel (required for Android Oreo and above)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(ALERT_NOTIFICATION_ID, "Alert Notification", NotificationManager.IMPORTANCE_HIGH)
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        // Create the notification
-        val notification = NotificationCompat.Builder(requireContext(), ALERT_NOTIFICATION_ID)
-            .setContentTitle("Alert")
-            .setContentText(notificationText)
-            .setSmallIcon(R.drawable.baseline_bluetooth_searching_24) // Set your notification icon here
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .build()
-
-        // Show the notification if permission is granted
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            notificationManager.notify(1, notification)
-        }
-    }*/
 }
