@@ -157,7 +157,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
                     Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected minutes" , Toast.LENGTH_LONG).show()
                     notification.text =notificationText
                 }
-                addToAWSS31(notificationText)
+                //addToAWSS31(notificationText)
                 if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
                 ) {
                     Log.i("BluetoothScan","Disconnecting Gatt")
