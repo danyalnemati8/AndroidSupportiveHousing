@@ -1,156 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.home.HomeFragment">
+
+    <TextView
+        android:id="@+id/text_home"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.home.HomeFragment">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:layout_alignParentTop="true"
+        android:text="Smart Pill" />
 
-        <TextView
-            android:id="@+id/text_home"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:textAlignment="center"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_below="@id/text_home"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:columnCount="2"
+        android:rowCount="4"
+        tools:context=".MainActivity">
 
 
-        <TextView
-            android:id="@+id/showNotification"
+    <Button
+            android:id="@+id/Sunday"
             android:layout_width="wrap_content"
-            android:layout_height="49dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"
-            android:layout_below="@+id/sendData"
-            android:background="@color/orange"
-            android:text="Notification Fragment"
-            android:textColor="@color/blue"
-            android:textSize="32dp" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="100dp"
+            android:text="Sunday" />
 
         <Button
-            android:id="@+id/sendData"
+            android:id="@+id/Monday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"
-            android:background="@color/beige"
-            android:text="Send Acknowledgment"
-            />
+            android:layout_gravity="center_horizontal"
+            android:text="Monday" />
 
-        <GridLayout
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_below="@+id/showNotification"
-            android:layout_gravity="center"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:alignmentMode="alignMargins"
-            android:columnCount="7"
-            android:layoutDirection="rtl"
-            android:rowCount="5"
-            android:useDefaultMargins="true"
-            tools:context=".MainActivity">
-
-            <Button
-                android:id="@+id/Sunday"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_row="0"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:text="Sunday" />
-
-            <Button
-                android:id="@+id/Monday"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_row="0"
-                android:layout_column="0"
-                android:layout_columnWeight="1"
-                android:text="Monday" />
-
-
-            <Button
-                android:id="@+id/Tuesday"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_row="1"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:text="Tuesday" />
-
-            <Button
-                android:id="@+id/Wednesday"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_row="1"
-                android:layout_column="0"
-                android:layout_columnWeight="1"
-                android:text="Wednesday" />
-
-            <Button
-                android:id="@+id/Thursday"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_row="2"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:text="Thursday" />
-
-            <Button
-                android:id="@+id/Friday"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_row="2"
-                android:layout_column="0"
-                android:layout_columnWeight="1"
-                android:text="Friday" />
-
-            <Button
-                android:id="@+id/Saturday"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_row="3"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:text="Saturday" />
-
-        </GridLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/Tuesday"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal">
+            android:layout_marginLeft="100dp"
+            android:layout_gravity="center_horizontal"
+            android:text="Tuesday" />
 
-            <Button
-                android:id="@+id/startSmartPill"
-                android:layout_width="399dp"
-                android:layout_height="wrap_content"
-                android:text="Launch Scan for Smart Pill"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.417"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.349" />
+        <Button
+            android:id="@+id/Wednesday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Wednesday" />
 
-            <Button
-                android:id="@+id/stopSmartPill"
-                android:layout_width="395dp"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:text="Stop Scan for Smart Pill"
-                tools:layout_editor_absoluteX="58dp"
-                tools:layout_editor_absoluteY="395dp" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/Thursday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="100dp"
+            android:layout_gravity="center_horizontal"
+            android:text="Thursday" />
 
+        <Button
+            android:id="@+id/Friday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Friday" />
+
+        <Button
+            android:id="@+id/Saturday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="100dp"
+            android:text="Saturday" />
+
+    </GridLayout>
+
+    <Button
+        android:id="@+id/sendData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_home"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="280dp"
+        android:text="Send Acknowledgment" />
+
+    <TextView
+        android:id="@+id/showNotification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sendData"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:background="@color/orange"
+        android:text="Notification Fragment"
+        android:textColor="@color/blue"
+        android:textSize="32sp" />
+
+
+        <Button
+            android:id="@+id/startSmartPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="92dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/showNotification"
+            android:text="Launch Scan for Smart Pill" />
+
+        <Button
+            android:id="@+id/stopSmartPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/startSmartPill"
+            android:layout_marginStart="96dp"
+            android:layout_centerHorizontal="true"
+            android:text="Stop Scan for Smart Pill"/>
 
 </RelativeLayout>
