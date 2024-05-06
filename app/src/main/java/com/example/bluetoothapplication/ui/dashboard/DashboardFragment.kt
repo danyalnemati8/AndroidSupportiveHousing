@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.ComponentName
 import android.content.Context
@@ -24,6 +25,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.bluetoothapplication.databinding.FragmentDashboardBinding
 import org.json.JSONException
@@ -41,7 +43,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
 import java.io.ByteArrayInputStream
 import com.amazonaws.services.s3.model.*
-
+import com.example.bluetoothapplication.ui.home.HomeViewModel
 
 
 class DashboardFragment : Fragment(),IBackgroundScan {
@@ -50,12 +52,15 @@ class DashboardFragment : Fragment(),IBackgroundScan {
     // This property is only valid between onCreateView and
     // onDestroyView.onConnectionStateChange
     private val binding get() = _binding!!
+   private lateinit var dashboardViewModel: DashboardViewModel
     var CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8"
     var SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
     private var gatt:BluetoothGatt? = null
     private var startBackgroundScan: Intent? = null
     private lateinit var notification: TextView
     var ALERT_NOTIFICATION_ID = "ALERT_NOTIFICATION"
+    //private val dashboardViewModel: DashboardViewModel by activityViewModels()
+
 
 
     val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
@@ -155,7 +160,8 @@ class DashboardFragment : Fragment(),IBackgroundScan {
                 Log.i("last detected",lastDetected.toString())
                 activity?.runOnUiThread {
                     Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected minutes" , Toast.LENGTH_LONG).show()
-                    notification.text =notificationText
+                    //notification.text =notificationText
+                    dashboardViewModel.updateNotification(notificationText)
                 }
                 //addToAWSS31(notificationText)
                 if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
@@ -193,82 +199,7 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         }
     }
 
-    private fun addToAWSS3(notificationText: String) {
-        val credentials = BasicAWSCredentials("", "")
-        val s3Client = AmazonS3Client(credentials)
-        s3Client.setRegion(com.amazonaws.regions.Region.getRegion(Regions.US_EAST_1))
-        val bucketName = ""
-        val objectKey = "notification.txt"
-        val notificationText = notificationText
-        val notificationTextBytes = notificationText.toByteArray()
-        val metadata = ObjectMetadata()
-        metadata.contentType = "text/plain"
 
-
-        val inputStream = ByteArrayInputStream(notificationTextBytes)
-        val putObjectRequest = PutObjectRequest(bucketName, objectKey, inputStream, metadata)
-        s3Client.putObject(putObjectRequest)
-    }
-
-
-    private fun addToAWSS31(notificationText: String) {
-        val credentials = BasicAWSCredentials("", "")
-        val s3Client = AmazonS3Client(credentials)
-        s3Client.setRegion(com.amazonaws.regions.Region.getRegion(Regions.US_EAST_1))
-
-        val bucketName = ""
-        val objectKey = "notification.txt"
-
-        try {
-            // Check if the object exists in the bucket
-            val objectMetadata = s3Client.getObjectMetadata(bucketName, objectKey)
-
-            // If the object exists, download its content
-            val existingObjectContent = if (objectMetadata.contentLength > 0) {
-                val s3Object = s3Client.getObject(bucketName, objectKey)
-                s3Object.objectContent.bufferedReader().use { it.readText() }
-            } else {
-                ""
-            }
-
-            // Append new notification text to the existing content
-            val notificationText = notificationText
-            val updatedContent = existingObjectContent + notificationText
-
-            // Convert the updated content to bytes
-            val updatedContentBytes = updatedContent.toByteArray()
-
-            // Create metadata for the updated object
-            val metadata = ObjectMetadata().apply {
-                contentType = "text/plain"
-                contentLength = updatedContentBytes.size.toLong()
-            }
-
-            // Upload the updated content back to S3
-            val inputStream = ByteArrayInputStream(updatedContentBytes)
-            val putObjectRequest = PutObjectRequest(bucketName, objectKey, inputStream, metadata)
-            s3Client.putObject(putObjectRequest)
-        } catch (e: AmazonS3Exception) {
-            if (e.statusCode == 404) {
-                // Object does not exist, create it with initial content
-                val initialContent = "Initial notification text"
-                val initialContentBytes = initialContent.toByteArray()
-                val initialMetadata = ObjectMetadata().apply {
-                    contentType = "text/plain"
-                    contentLength = initialContentBytes.size.toLong()
-                }
-                val initialInputStream = ByteArrayInputStream(initialContentBytes)
-                val initialPutObjectRequest = PutObjectRequest(bucketName, objectKey, initialInputStream, initialMetadata)
-                s3Client.putObject(initialPutObjectRequest)
-            } else {
-                // Handle other S3-specific exceptions
-                e.printStackTrace()
-            }
-        } catch (e: Exception) {
-            // Handle other exceptions (e.g., connectivity issues)
-            e.printStackTrace()
-        }
-    }
 
     // Initialize Amazon S3 client with region
 
@@ -276,14 +207,18 @@ class DashboardFragment : Fragment(),IBackgroundScan {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val dashboardViewModel =
-            ViewModelProvider(this).get(DashboardViewModel::class.java)
+       dashboardViewModel = ViewModelProvider(this).get(DashboardViewModel::class.java)
 
 
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         notification = binding.notificationText
+
+        dashboardViewModel.notification.observe(viewLifecycleOwner) { notificationText ->
+            notification.text = notificationText
+        }
+
         val startscan: Button = binding.startscan
         val stopscan: Button = binding.stopscan
 
@@ -303,10 +238,10 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         stopscan.setOnClickListener {
             stopBackgroundScan()
         }
-
-        dashboardViewModel.text.observe(viewLifecycleOwner) {
+        serviceInstance?.callback = this
+        /*dashboardViewModel.text.observe(viewLifecycleOwner) {
             notification.text = it
-        }
+        }*/
 
 
         return root
@@ -318,14 +253,39 @@ class DashboardFragment : Fragment(),IBackgroundScan {
 
     }
 
-    override fun onTargetDeviceFound(device: BluetoothDevice) {
+    /*override fun onTargetDeviceFound(device: BluetoothDevice) {
         Log.i("BluetoothScan","Reached onTargetDeviceFound")
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
         ) {
             Log.i("BluetoothScan","Reached onTargetDeviceFound")
             gatt = device.connectGatt(requireContext(),true,gattCallback,BluetoothDevice.TRANSPORT_LE)
         }
+    }*/
+
+    override fun onTargetDeviceFound(device: BluetoothDevice) {
+
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            // Fragment is attached and permission is granted, proceed with Bluetooth connection
+            gatt = device.connectGatt(requireContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE)
+        } else {
+            Log.e("BluetoothScan", "Fragment is attached, but permission is not granted.")
+        }
     }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        // Initialize BluetoothAdapter and BluetoothScanner
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothAdapter = bluetoothManager.adapter
+        val bluetoothScanner = bluetoothAdapter.bluetoothLeScanner
+
+        // Initialize service connection
+        val intent = Intent(context, SmartWellnessBackgroundScan::class.java)
+        context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
+    }
+
+
 
     private val mConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {

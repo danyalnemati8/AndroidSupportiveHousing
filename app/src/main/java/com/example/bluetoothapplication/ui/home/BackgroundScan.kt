@@ -12,11 +12,13 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.kotlinconversionsupportivehousing.IBackgroundScan
 import com.example.kotlinconversionsupportivehousing.IRestartScan
@@ -45,7 +47,7 @@ class BackgroundScan : Service(), IRestartScan {
             if(device.name != null){
                 Log.i("Scanned Devices", device.name)
             }
-            if (device != null && device.name != null && device.name == "pillDispenser") {
+            if (device != null && device.name != null && device.name == "ESP32") {
                 Log.i("BACKGROUND SERVICE", "scan stopped")
                 scanner!!.stopScan(this)
                 callback!!.onTargetDeviceFound(device)
@@ -69,6 +71,7 @@ class BackgroundScan : Service(), IRestartScan {
         handler.postDelayed({ scanner!!.startScan(scanCallback) }, 120000)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
         NotificationHelper.createNotificationChannel(
@@ -92,22 +95,22 @@ class BackgroundScan : Service(), IRestartScan {
         scanner!!.startScan(scanCallback)
     }
 
+    @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Toast.makeText(
-            applicationContext,
-            "Launching background Bluetooth scan...",
-            Toast.LENGTH_LONG
-        ).show()
-        SERVICE_UUID = intent.getStringExtra("service_uuid")
-        CHARACTERISTIC_UUID = intent.getStringExtra("characteristic_uuid")
-        if (notification != null) {
-            startForeground(1, notification)
-            // Start the continuous scan here
-            beginScan()
-        } else {
-            Log.i("FOREGROUND SERVICE", "Error initializing notification object")
+        if(intent !=null){
+            Toast.makeText(applicationContext, "Launching background Bluetooth scan...", Toast.LENGTH_LONG).show()
+            SERVICE_UUID = intent.getStringExtra("service_uuid")
+            CHARACTERISTIC_UUID = intent.getStringExtra("characteristic_uuid")
+            if (notification != null) {
+                startForeground(1, notification)
+                // Start the continuous scan here
+                beginScan()
+            } else {
+                Log.i("FOREGROUND SERVICE", "Error initializing notification object")
+            }
+            Log.i("BACKGROUND SERVICE", "Background onStartCommand running")
         }
-        Log.i("BACKGROUND SERVICE", "Background onStartCommand running")
+
         return START_STICKY
     }
 

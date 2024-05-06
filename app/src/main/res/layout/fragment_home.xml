@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="100dp"
+            android:layout_marginLeft="200dp"
             android:text="Sunday" />
 
         <Button
@@ -52,7 +52,7 @@
             android:id="@+id/Tuesday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
+            android:layout_marginLeft="200dp"
             android:layout_gravity="center_horizontal"
             android:text="Tuesday" />
 
@@ -67,7 +67,7 @@
             android:id="@+id/Thursday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
+            android:layout_marginLeft="200dp"
             android:layout_gravity="center_horizontal"
             android:text="Thursday" />
 
@@ -82,7 +82,7 @@
             android:id="@+id/Saturday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
+            android:layout_marginLeft="200dp"
             android:text="Saturday" />
 
     </GridLayout>

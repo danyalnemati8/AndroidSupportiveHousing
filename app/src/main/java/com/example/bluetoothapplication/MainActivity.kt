@@ -37,7 +37,9 @@ import android.view.View
 import android.widget.Button
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import com.example.bluetoothapplication.ui.dashboard.DashboardViewModel
 import com.example.kotlinconversionsupportivehousing.IBackgroundScan
 import com.example.kotlinconversionsupportivehousing.IPillDispenser
 import java.nio.charset.StandardCharsets
@@ -51,6 +53,8 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
     private lateinit var notGrantedPermissions : List<String>
     //private val bluetoothGattHelper = BluetoothGattHelper()
     private lateinit var enableBluetoothLauncher: ActivityResultLauncher<Intent>
+    val dashboardViewModel: DashboardViewModel by viewModels()
+
 
 
     //    ESP-01 UUIDs

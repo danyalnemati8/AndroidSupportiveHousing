@@ -45,7 +45,7 @@ class SmartWellnessBackgroundScan : Service() {
     private val handler = Handler(Looper.myLooper()!!)
     private val SCAN_PERIOD: Long = 20000
     private val handler1 = Handler(Looper.getMainLooper())
-    private val SCAN_INTERVAL: Long = 1 * 60 * 1000 // 5 minutes
+    private val SCAN_INTERVAL: Long = 1 * 60 * 1000 // 1 minutes
 
 
     override fun onCreate() {

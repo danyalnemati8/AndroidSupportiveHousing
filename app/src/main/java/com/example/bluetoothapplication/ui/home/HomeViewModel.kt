@@ -10,4 +10,12 @@ class HomeViewModel : ViewModel() {
         value = "This is home Fragment"
     }
     val text: LiveData<String> = _text
+    private val _textNotification = MutableLiveData<String>()
+    val textNotification: LiveData<String>
+        get() = _textNotification
+
+    fun updateNotificationText(newText: String) {
+        _textNotification.value = newText
+    }
+
 }
