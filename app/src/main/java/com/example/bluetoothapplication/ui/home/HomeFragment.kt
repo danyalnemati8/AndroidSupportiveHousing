@@ -298,9 +298,7 @@ class HomeFragment : Fragment(), IBackgroundScan {
                 } else{
                     schedule[dayAbbreviated] = String.format(Locale.getDefault(), "%02d:%02d AM", hour, minute)
                 }
-//                Log.i("Schedule", schedule.toString())
                 Log.i("Schedule", convertData())
-//                sendToDevice(schedule.toString())
                 sendToDevice(convertData())
             }
         val style = android.R.style.Theme_Holo_Light_Dialog_NoActionBar
@@ -313,19 +311,14 @@ class HomeFragment : Fragment(), IBackgroundScan {
     fun convertData(): String {
 
         var newScheduleFormat = ""
-
         for ((key, value) in schedule) {
             newScheduleFormat += key + " " + value + " "
         }
-
         return newScheduleFormat.trimEnd()
-
-
     }
 
     private fun launchBackgroundScan() {
         Log.i("launchBackgroundScan", "launchBackgroundScan currently running")
-//        startBackgroundScan = Intent(requireContext(), BackgroundScan::class.java)
         startBackgroundScan = Intent(requireContext(), BackgroundScan::class.java)
         startBackgroundScan!!.putExtra("service_uuid", SERVICE_UUID)
         startBackgroundScan!!.putExtra("characteristic_uuid", CHARACTERISTIC_UUID)
@@ -335,9 +328,6 @@ class HomeFragment : Fragment(), IBackgroundScan {
         }else{
             requireContext().startService(startBackgroundScan)
         }
-//        serviceInstance?.registerClient(this@HomeFragment)
-
-
     }
 
     override fun onDeviceScan(result: android.bluetooth.le.ScanResult?) {
@@ -391,7 +381,6 @@ class HomeFragment : Fragment(), IBackgroundScan {
         }
         textNotification = binding.showNotification
 
-//        pillDispinserService = findViewById<Button>(R.id.startSmartPill)
         pillDispinserService = binding.startSmartPill
         pillDispinserService.setOnClickListener(View.OnClickListener {
             initiateBackgroundScan = true
@@ -418,11 +407,8 @@ class HomeFragment : Fragment(), IBackgroundScan {
 
 
     fun startBackgroundScan(){
-        //Get the adapter
         val bluetoothAdapter: BluetoothAdapter? = (requireActivity().getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
         val bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
-//        bluetoothLeScanner.startScan()
-
     }
 
     override fun onDestroyView() {

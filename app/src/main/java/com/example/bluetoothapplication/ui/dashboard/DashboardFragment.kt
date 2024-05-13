@@ -14,7 +14,9 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -25,7 +27,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.bluetoothapplication.databinding.FragmentDashboardBinding
 import org.json.JSONException
@@ -36,32 +37,25 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.metrics.AwsSdkMetrics.setRegion
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
 import java.io.ByteArrayInputStream
 import com.amazonaws.services.s3.model.*
-import com.example.bluetoothapplication.ui.home.HomeViewModel
 
 
 class DashboardFragment : Fragment(),IBackgroundScan {
 
     private var _binding: FragmentDashboardBinding? = null
-    // This property is only valid between onCreateView and
-    // onDestroyView.onConnectionStateChange
     private val binding get() = _binding!!
-   private lateinit var dashboardViewModel: DashboardViewModel
+    private lateinit var dashboardViewModel: DashboardViewModel
     var CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8"
     var SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-    private var gatt:BluetoothGatt? = null
+    var gatt:BluetoothGatt? = null
     private var startBackgroundScan: Intent? = null
     private lateinit var notification: TextView
     var ALERT_NOTIFICATION_ID = "ALERT_NOTIFICATION"
-    //private val dashboardViewModel: DashboardViewModel by activityViewModels()
-
-
 
     val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
 
@@ -160,16 +154,13 @@ class DashboardFragment : Fragment(),IBackgroundScan {
                 Log.i("last detected",lastDetected.toString())
                 activity?.runOnUiThread {
                     Toast.makeText(requireContext(), "Alert: No motion detected for $lastDetected minutes" , Toast.LENGTH_LONG).show()
-                    //notification.text =notificationText
                     dashboardViewModel.updateNotification(notificationText)
                 }
-                //addToAWSS31(notificationText)
                 if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
                 ) {
                     Log.i("BluetoothScan","Disconnecting Gatt")
                     gatt.disconnect()
                     gatt.close()
-                    //stopBackgroundScan()
                 }
 
             } catch (e: JSONException) {
@@ -222,8 +213,36 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         val startscan: Button = binding.startscan
         val stopscan: Button = binding.stopscan
 
+        val onetimescan : Button = binding.onetimescan
+        serviceInstance?.callback = this
+
+        onetimescan.setOnClickListener {
+            try{
+                Log.i("BluetoothScan", "Launch Background Scan(onetimescan) in Wellness Clicked")
+
+                startBackgroundScan = Intent(requireContext(), SmartWellnessBackgroundScan::class.java)
+                startBackgroundScan!!.putExtra("service_uuid", SERVICE_UUID)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    requireContext().startForegroundService(startBackgroundScan)
+                } else {
+                    requireContext().startService(startBackgroundScan)
+                }
+                val intent = Intent(requireContext(), SmartWellnessBackgroundScan::class.java)
+                requireContext().bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
+                binding.startscan.isEnabled = false
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    stopBackgroundScan()
+                }, 60000 )
+            }finally{
+                binding.startscan.isEnabled = true
+
+            }
+        }
+
         startscan.setOnClickListener {
             Log.i("BluetoothScan", "Launch Background Scan in Wellness Clicked")
+            binding.onetimescan.isEnabled = false
             startBackgroundScan = Intent(requireContext(), SmartWellnessBackgroundScan::class.java)
             startBackgroundScan!!.putExtra("service_uuid", SERVICE_UUID)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -235,15 +254,14 @@ class DashboardFragment : Fragment(),IBackgroundScan {
             requireContext().bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
         }
 
-        stopscan.setOnClickListener {
-            stopBackgroundScan()
+        stopscan.setOnClickListener {999
+            try{
+                stopBackgroundScan()
+            }finally{
+                binding.onetimescan.isEnabled = true
+            }
+
         }
-        serviceInstance?.callback = this
-        /*dashboardViewModel.text.observe(viewLifecycleOwner) {
-            notification.text = it
-        }*/
-
-
         return root
     }
 
@@ -253,19 +271,10 @@ class DashboardFragment : Fragment(),IBackgroundScan {
 
     }
 
-    /*override fun onTargetDeviceFound(device: BluetoothDevice) {
-        Log.i("BluetoothScan","Reached onTargetDeviceFound")
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.i("BluetoothScan","Reached onTargetDeviceFound")
-            gatt = device.connectGatt(requireContext(),true,gattCallback,BluetoothDevice.TRANSPORT_LE)
-        }
-    }*/
 
     override fun onTargetDeviceFound(device: BluetoothDevice) {
 
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-            // Fragment is attached and permission is granted, proceed with Bluetooth connection
             gatt = device.connectGatt(requireContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE)
         } else {
             Log.e("BluetoothScan", "Fragment is attached, but permission is not granted.")
@@ -274,15 +283,12 @@ class DashboardFragment : Fragment(),IBackgroundScan {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
-        // Initialize BluetoothAdapter and BluetoothScanner
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
         val bluetoothScanner = bluetoothAdapter.bluetoothLeScanner
-
-        // Initialize service connection
         val intent = Intent(context, SmartWellnessBackgroundScan::class.java)
         context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
+
     }
 
 
@@ -301,13 +307,11 @@ class DashboardFragment : Fragment(),IBackgroundScan {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             Log.i("SERVICE BIND SMART WELLNESS", "Disconnected")
-            // Clear the reference to the service instance
             serviceInstance = null
         }
     }
 
     private fun stopBackgroundScan() {
-        // Foreground service was never started to begin with
         if (startBackgroundScan == null) {
             return
         }
@@ -316,11 +320,12 @@ class DashboardFragment : Fragment(),IBackgroundScan {
         }
         serviceInstance?.stopServiceScan()
 
-        // Stop the service if it was started
         if (serviceInstance != null) {
             requireActivity().stopService(Intent(requireContext(), SmartWellnessBackgroundScan::class.java))
             requireContext().unbindService(mConnection)
         }
         startBackgroundScan = null
     }
+
+
 }

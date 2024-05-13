@@ -12,7 +12,10 @@ class HomeViewModel : ViewModel() {
     val text: LiveData<String> = _text
     private val _textNotification = MutableLiveData<String>()
     val textNotification: LiveData<String>
-        get() = _textNotification
+        get() {
+            return _textNotification
+        }
+
 
     fun updateNotificationText(newText: String) {
         _textNotification.value = newText

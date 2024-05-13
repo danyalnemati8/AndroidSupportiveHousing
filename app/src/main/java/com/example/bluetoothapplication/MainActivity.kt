@@ -128,17 +128,6 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
         }
     }
 
-//    val scanCallback: ScanCallback = object : ScanCallback() {
-//        override fun onScanResult(callbackType: Int, result: ScanResult) {
-//            Log.i("Scan passed", "Could  complete scan for nearby BLE devices")
-//            devices.add(result.device)
-//        }
-//
-//        override fun onScanFailed(errorCode: Int) {
-//            Log.i("Scan failed", "Could not complete scan for nearby BLE devices")
-//            return
-//        }
-//    }
 
     @SuppressLint("MissingPermission")
     fun sendToDevice(message: String){
@@ -219,8 +208,6 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
     @SuppressLint("MissingPermission")
     override fun onTargetDeviceFound(device: BluetoothDevice?) {
         Log.i("BACKGROUND SERVICE", "onTargetDeviceFound running")
-//            val gatt = device?.connectGatt(this, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
-//        val gatt = device?.connectGatt(this, false, smartWellnessGatt.gattCallback, BluetoothDevice.TRANSPORT_LE)
         val gatt = device?.connectGatt(this, false, pillDispenserGatt.gattCallback, BluetoothDevice.TRANSPORT_LE)
     }
 
@@ -232,8 +219,6 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
 
         val navView: BottomNavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications
@@ -241,40 +226,8 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
-        // Start with check bluetooth permissions and location permissions
         scanForBluetoothWithPermissions()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //scanForBluetoothWithPermissions()
-        }else {
-            //scanForBluetooth()
-        }
-
-//        pillDispinserService = findViewById<Button>(R.id.startSmartPill)
-//        pillDispinserService.setOnClickListener(View.OnClickListener {
-//            initiateBackgroundScan = true
-//            scanForBluetoothWithPermissionsPillDispenser()
-//        })
-
-//        setSunday = findViewById<Button>(R.id.Sunday)
-//        setSunday.setOnClickListener(View.OnClickListener { setTime("Sunday") })
-//        setMonday = findViewById<Button>(R.id.Monday)
-//        setMonday.setOnClickListener(View.OnClickListener { setTime("Monday") })
-//        setTuesday = findViewById<Button>(R.id.Tuesday)
-//        setTuesday.setOnClickListener(View.OnClickListener { setTime("Tuesday") })
-//        setWednesday = findViewById<Button>(R.id.Wednesday)
-//        setWednesday.setOnClickListener(View.OnClickListener { setTime("Wednesday") })
-//        setThursday = findViewById<Button>(R.id.Thursday)
-//        setThursday.setOnClickListener(View.OnClickListener { setTime("Thursday") })
-//        setFriday = findViewById<Button>(R.id.Friday)
-//        setFriday.setOnClickListener(View.OnClickListener { setTime("Friday") })
-//        setSaturday = findViewById<Button>(R.id.Saturday)
-//        setSaturday.setOnClickListener(View.OnClickListener { setTime("Saturday") })
-
-
-
     }
-    // Checking if permissions already exist or writing those permissions
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -282,7 +235,6 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
             BluetoothPermissionResult.launch(notGrantedPermissions.toTypedArray())
         }else{
             Toast.makeText(this, "Bluetooth and location not permission granted", Toast.LENGTH_SHORT).show()
-            //scanForBluetoothWithPermissions()
         }
     }
     private fun scanForBluetoothWithPermissions() {
@@ -299,92 +251,6 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
             enableBluetoothandLocation()
         }
     }
-       /* @SuppressLint("MissingPermission")
-        fun scanForBluetoothWithPermissionsPillDispenser(){
-            Log.i("Service", "scanForBluetoothWithPermissionsService invoked")
-            if (isPermissionsGranted() != PackageManager.PERMISSION_GRANTED) {
-                showAlertService()
-            } else {
-                Toast.makeText(this, "Permissions already granted.", Toast.LENGTH_SHORT).show()
-                Log.i("Permission", "Scan Permission granted")
-                launchBackgroundScan()
-            }
-        }
-
-        private fun showAlertService() {
-            Log.i("Permission", "showAlert function triggered")
-            Log.i("Service", "scanForBluetoothWithPermissionsService invoked")
-            val builder = android.app.AlertDialog.Builder(this)
-            builder.setTitle("Need permission(s)")
-            builder.setMessage("Bluetooth permissions are required to do the task.")
-            builder.setPositiveButton("OK", { dialog, which -> requestPermissions() })
-            builder.setNeutralButton("Cancel", null)
-            val dialog = builder.create()
-            dialog.show()
-        }
-
-        private fun requestPermissions() {
-            val permission = deniedPermission()
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-                Toast.makeText(this, "Should show an explanation.", Toast.LENGTH_SHORT).show()
-            } else {
-                ActivityCompat.requestPermissions(this, permissionList.toTypedArray(), permissionrequestcode)
-            }
-        }
-
-        @SuppressLint("MissingPermission")
-        override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<out String>,
-            grantResults: IntArray
-        ) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-            when (requestCode) {
-                permissionrequestcode -> {
-                    if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(this, "Permissions already granted.", Toast.LENGTH_SHORT).show()
-                        Log.i("Permission", "Scan Permission granted")
-//                    bluetoothScanner.startScan(scanCallback)
-                        if(initiateBackgroundScan){
-                            initiateBackgroundScan = false
-                            launchBackgroundScan()
-                        }
-                    }
-                }
-            }
-        }
-
-        private fun deniedPermission(): String {
-            for (permission in permissionList) {
-                if (ContextCompat.checkSelfPermission(this, permission)
-                    == PackageManager.PERMISSION_DENIED) return permission
-            }
-            return ""
-        }
-
-        private fun isPermissionsGranted(): Int {
-            var counter = 0;
-            for (permission in permissionList) {
-                counter += ContextCompat.checkSelfPermission(this, permission)
-            }
-            return counter
-        }
-*/
-        // Code to write the toast message.
-        /*private fun displayRequestPermissionToastMessage(){
-            AlertDialog.Builder(this).setTitle("Requesting Bluetooth and Location Permissions")
-                .setMessage("Bluetooth and location permissions are needed to connect to IoT Devices ")
-                .setNegativeButton("Cancel"){
-                    dialog,_->Toast.makeText(this,"Permission Denied",Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
-                }
-                .setPositiveButton("OK"){_,_->
-                    ActivityCompat.requestPermissions(this, notGrantedPermissions.toTypedArray(), 123)
-                    BluetoothPermissionResult.launch(notGrantedPermissions.toTypedArray())
-                }
-                .show()
-        }*/
         private val BluetoothPermissionResult=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
             permissionMap->
             if (permissionMap.all { it.value }){
@@ -399,39 +265,10 @@ class MainActivity : AppCompatActivity(), IBackgroundScan {
         private fun enableBluetoothandLocation() {
             Log.i("BluetoothScan","Now actually Enabling BluetoothScan")
             val bluetoothAdapter: BluetoothAdapter? = (this.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
-            /* enableBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                 if (result.resultCode == Activity.RESULT_OK) {
-                     Toast.makeText(this,"Bluetooth has been enabled successfully",Toast.LENGTH_SHORT).show()
-                 } else {
-                     Toast.makeText(this,"Bluetooth has not been enabled successfully",Toast.LENGTH_SHORT).show()
-                 }*/
-            /*
-                    fun Context.bluetoothAdapter(): BluetoothAdapter? =
-                        (this.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
-                   */ if(bluetoothAdapter != null) {
+             if(bluetoothAdapter != null) {
                 Log.i("BluetoothScan","Got Bluetooth Adapter")
                 val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 startActivityForResult(enableBtIntent, 123)
-
-                //Action Point to fix this deprecation in future.
-                //Need to flow logs -> some stupidity is there
-
-                /* val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                 enableBluetoothLauncher.launch(enableBtIntent)
-                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                     //bluetoothAdapter.enable()
-                 }
-                 bluetoothAdapter.enable()
-                 }*/
             }
         }
-
-
-
-
-
-
-        //https://stackoverflow.com/questions/70475132/using-bluetoothmanager-and-getadapater
-        //chatgpt as one method was deprecated\
-        //Tried permission it went to nothing.-<:((
     }

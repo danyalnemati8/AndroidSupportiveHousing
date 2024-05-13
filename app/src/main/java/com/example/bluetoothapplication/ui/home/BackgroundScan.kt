@@ -126,8 +126,6 @@ class BackgroundScan : Service(), IRestartScan {
     }
 
     inner class MyBinder : Binder() {
-//        val instance: BackgroundScan
-//            get() = this@BackgroundScan
 
         fun getInstance(): BackgroundScan? {
             return this@BackgroundScan
@@ -135,9 +133,6 @@ class BackgroundScan : Service(), IRestartScan {
     }
 
     fun registerClient(activity: Activity?) {
-//        if (activity is MainActivity) {
-//            callback = activity as IBackgroundScan?
-//        }
         callback = activity as IBackgroundScan?
     }
 
@@ -146,9 +141,6 @@ class BackgroundScan : Service(), IRestartScan {
     }
 
     fun registerClient(fragment: HomeFragment?) {
-//        if (activity is MainActivity) {
-//            callback = activity as IBackgroundScan?
-//        }
         callback = fragment as IBackgroundScan?
     }
 

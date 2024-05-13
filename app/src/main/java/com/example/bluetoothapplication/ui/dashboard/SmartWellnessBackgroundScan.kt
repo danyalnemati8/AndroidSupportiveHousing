@@ -68,9 +68,7 @@ class SmartWellnessBackgroundScan : Service() {
     }
 
     private fun schedulePeriodicScan() {
-        // Begin scan immediately
         beginScan()
-        // Schedule the next scan after SCAN_INTERVAL
         handler.postDelayed({
             schedulePeriodicScan()
         }, SCAN_INTERVAL)
