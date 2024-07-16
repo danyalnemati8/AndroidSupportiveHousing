@@ -67,17 +67,17 @@ class HomeFragment : Fragment(), IBackgroundScan {
 //    val SERVICE_UUID = "adee10c3-91dd-43aa-ab9b-052eb63d456c"
 //    val DESCRIPTOR_UUID = "4d6ec567-93f0-4541-8152-81b35dc5cb8b"
 
-    //    BLANK
-//    val CHARACTERISTIC_UUID = "681F827F-D00E-4307-B77A-F38014D6CC5F"
-//    val SERVICE_UUID = "3BED005E-75B7-4DE6-B877-EAE81B0FC93F"
-//    val DESCRIPTOR_UUID = "013B54B2-5520-406A-87F5-D644AD3E0565"
+    //    Pill Dispenser Mock
+    val CHARACTERISTIC_UUID = "681F827F-D00E-4307-B77A-F38014D6CC5F"
+    val SERVICE_UUID = "3BED005E-75B7-4DE6-B877-EAE81B0FC93F"
+    val DESCRIPTOR_UUID = "013B54B2-5520-406A-87F5-D644AD3E0565"
 
 //    Pill Dispenser
         //  val CHARACTERISTIC_UUID = "B3E39CF1-B4D5-4F0A-88DE-6EDE9ABE2BD2"
     //val SERVICE_UUID = "B3E39CF0-B4D5-4F0A-88DE-6EDE9ABE2BD2"
     //val DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb"
-    var CHARACTERISTIC_UUID = "ed8b2def-6b4c-48d2-b257-7832d2f2e929"
-    var SERVICE_UUID = "3d7ceefa-7f25-4321-b966-b2ccb9f33256"
+//    var CHARACTERISTIC_UUID = "ed8b2def-6b4c-48d2-b257-7832d2f2e929"
+//    var SERVICE_UUID = "3d7ceefa-7f25-4321-b966-b2ccb9f33256"
     // Pill Dispenser Buttons
     lateinit var pillDispinserService: Button
     var initiateBackgroundScan = false
@@ -341,7 +341,7 @@ class HomeFragment : Fragment(), IBackgroundScan {
     open fun addDeviceToList(device: BluetoothDevice?, uuids: kotlin.collections.MutableList<ParcelUuid?>?) {
         if (((device != null) && (device.getName() != null) && !device.getName().isEmpty())) {
             if (!serviceScannedDevices.contains(MyBluetoothDevice(device, uuids))) {
-                if ((device.getName() == "Pill Dispenser")) {
+                if ((device.getName() == "Pill Dispenser Mock")) {
                     serviceScannedDevices?.add(0, MyBluetoothDevice(device, uuids))
                 } else {
                     serviceScannedDevices?.add(MyBluetoothDevice(device, uuids))

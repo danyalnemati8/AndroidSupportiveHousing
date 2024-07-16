@@ -47,7 +47,7 @@ class BackgroundScan : Service(), IRestartScan {
             if(device.name != null){
                 Log.i("Scanned Devices", device.name)
             }
-            if (device != null && device.name != null && device.name == "Pill Dispenser") {
+            if (device != null && device.name != null && device.name == "Pill Dispenser Mock") {
                 Log.i("BACKGROUND SERVICE", "scan stopped")
                 scanner!!.stopScan(this)
                 callback!!.onTargetDeviceFound(device)
