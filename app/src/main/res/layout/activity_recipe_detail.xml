@@ -23,7 +23,8 @@
         android:layout_below="@id/recipeImage"
         android:layout_margin="8dp"
         android:text="Black Bean Soup"
-        android:textSize="24sp"
+        android:textSize="40sp"
+        android:layout_centerHorizontal="true"
         android:textColor="@android:color/black" />
 
     <TextView
@@ -33,7 +34,7 @@
         android:layout_below="@id/recipeTitle"
         android:layout_margin="8dp"
         android:text="Allergens: None"
-        android:textSize="18sp"
+        android:textSize="25sp"
         android:textColor="@android:color/black" />
 
     <Button
@@ -41,6 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/recipeAllergens"
+        android:textSize="20sp"
         android:layout_margin="8dp"
         android:text="Ingredients"
         android:onClick="showIngredients" />
