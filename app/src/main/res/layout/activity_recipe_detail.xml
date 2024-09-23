@@ -1,70 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RecipeDetailActivity">
+    tools:context=".">
 
     <ImageView
         android:id="@+id/recipeImage"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_margin="8dp"
-        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/sample_image" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/recipeTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+         /> <!-- android:src="" -->
 
     <TextView
         android:id="@+id/recipeTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/recipeImage"
-        android:layout_margin="8dp"
         android:text="Black Bean Soup"
-        android:textSize="40sp"
-        android:layout_centerHorizontal="true"
-        android:textColor="@android:color/black" />
+        android:textSize="28sp"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/recipeImage"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/recipeAllergens"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/recipeTitle"
-        android:layout_margin="8dp"
         android:text="Allergens: None"
-        android:textSize="25sp"
-        android:textColor="@android:color/black" />
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/recipeTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp" />
 
     <Button
         android:id="@+id/ingredientsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/recipeAllergens"
-        android:textSize="20sp"
-        android:layout_margin="8dp"
         android:text="Ingredients"
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@id/recipeAllergens"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
         android:onClick="showIngredients" />
 
     <TextView
         android:id="@+id/ingredientsList"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/ingredientsButton"
-        android:layout_margin="8dp"
         android:text="• 1 tbsp olive oil\n• 1 onion\n• 15 oz. black beans\n• 16 oz. salsa\n• 1 can chicken broth"
         android:textSize="16sp"
         android:visibility="gone"
-        android:textColor="@android:color/black" />
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/ingredientsButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/startCookingButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:layout_centerHorizontal="true"
         android:text="Start Cooking"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp"
         android:onClick="startCooking" />
-</RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

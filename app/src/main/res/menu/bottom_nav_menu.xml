@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
@@ -16,4 +15,8 @@
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/title_notifications" />
 
+  <!--  <item
+        android:id="@+id/navigation_smart_pot"
+        android:icon="@drawable/pot.png"   Add your Smart Pot icon here
+    android:title="@string/title_smart_pot" />   Define this string in strings.xml -->
 </menu>

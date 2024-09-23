@@ -16,8 +16,7 @@
     android:layout_height="200dp"
     android:layout_below="@id/stepTitle"
     android:layout_marginTop="16dp"
-    android:scaleType="centerCrop"
-    android:src="@drawable/ic_sample_image" /><!-- Instructions --><TextView
+    android:scaleType="centerCrop"/><!-- Instructions --><TextView
     android:id="@+id/stepInstructions"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -32,13 +31,11 @@
     android:layout_alignParentStart="true"
     android:layout_alignParentBottom="true"
     android:layout_margin="16dp"
-    android:text="Previous Step"
-    android:background="@drawable/rounded_button" /><!-- Next Step Button --><Button
+    android:text="Previous Step" /><!-- Next Step Button --><Button
     android:id="@+id/nextStepButton"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_alignParentEnd="true"
     android:layout_alignParentBottom="true"
     android:layout_margin="16dp"
-    android:text="Next Step"
-    android:background="@drawable/rounded_button" /></RelativeLayout>
+    android:text="Next Step"/></RelativeLayout>

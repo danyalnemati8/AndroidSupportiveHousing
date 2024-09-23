@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".StepDetailActivity">
+    android:layout_height="match_parent">
 
     <!-- Back button -->
     <ImageButton
@@ -12,10 +11,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:background="@null"
-        android:src="@drawable/ic_arrow_back_black_24dp" />
+        android:background="@null"/>
+    <!--android:src="@drawable/ic_arrow_back_black_24dp" -->
 
-    <!-- Title -->
+<!-- Title -->
     <TextView
         android:id="@+id/recipeTitle"
         android:layout_width="wrap_content"
@@ -40,7 +39,6 @@
             android:id="@+id/step1Image"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/ic_sample_image"
             android:layout_alignParentStart="true" />
 
         <TextView
@@ -76,7 +74,6 @@
             android:id="@+id/step2Image"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/ic_sample_image"
             android:layout_alignParentStart="true" />
 
         <TextView
@@ -112,7 +109,7 @@
             android:id="@+id/step3Image"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/ic_sample_image"
+
             android:layout_alignParentStart="true" />
 
         <TextView
